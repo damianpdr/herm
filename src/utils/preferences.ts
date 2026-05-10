@@ -18,6 +18,10 @@ import { useSyncExternalStore } from "react"
 // ─── Schema ──────────────────────────────────────────────────────────
 
 export type DetailMode = "hidden" | "collapsed" | "expanded"
+export type UiMode = "default" | "compact"
+export type SidebarMode = "full" | "compact" | "hidden"
+export type TabMode = "full" | "compact"
+export type CloudMode = "auto" | "manual" | "hidden"
 
 interface TuiPreferences {
   /** JSON schema reference (for editor autocomplete) */
@@ -38,6 +42,18 @@ interface TuiPreferences {
   animations?: boolean
   /** Thought-cloud tool trail verbosity */
   toolDetails?: DetailMode
+  /** Overall UI density preset. Defaults preserve upstream chrome. */
+  uiMode?: UiMode
+  /** Sidebar density/visibility. */
+  sidebarMode?: SidebarMode
+  /** Tab label density. */
+  tabMode?: TabMode
+  /** Thought-cloud auto-open behavior. */
+  cloudMode?: CloudMode
+  /** Show the startup splash for splash-enabled launches. */
+  showSplash?: boolean
+  /** Show persistent helper hints in chrome. */
+  showHints?: boolean
   /** User keybinding overrides (ActionId → chord string) */
   keys?: Record<string, string>
   /** Clock style for time-of-day formatters */
@@ -70,9 +86,18 @@ export type KanbanPrefs = {
   }>
 }
 
-const DEFAULTS: Required<Pick<TuiPreferences, "mouse" | "targetFps">> = {
+const DEFAULTS: Required<Pick<TuiPreferences,
+  "mouse" | "targetFps" | "uiMode" | "sidebarMode" | "tabMode" |
+  "cloudMode" | "showSplash" | "showHints"
+>> = {
   mouse: true,
   targetFps: 30,
+  uiMode: "default",
+  sidebarMode: "full",
+  tabMode: "full",
+  cloudMode: "auto",
+  showSplash: true,
+  showHints: true,
 }
 
 // ─── Paths ───────────────────────────────────────────────────────────

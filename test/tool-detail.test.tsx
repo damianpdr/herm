@@ -24,6 +24,26 @@ describe("preferences > usePref", () => {
     act(() => prefs.set("toolDetails", "expanded"))
     t.destroy()
   })
+
+  test("compact UI preferences have upstream-safe defaults and can be overridden", () => {
+    expect(prefs.get("uiMode")).toBe("default")
+    expect(prefs.get("tabMode")).toBe("full")
+    expect(prefs.get("cloudMode")).toBe("auto")
+    expect(prefs.get("showSplash")).toBe(true)
+    expect(prefs.get("showHints")).toBe(true)
+
+    prefs.set("uiMode", "compact")
+    prefs.set("tabMode", "compact")
+    prefs.set("cloudMode", "manual")
+    prefs.set("showSplash", false)
+    prefs.set("showHints", false)
+
+    expect(prefs.get("uiMode")).toBe("compact")
+    expect(prefs.get("tabMode")).toBe("compact")
+    expect(prefs.get("cloudMode")).toBe("manual")
+    expect(prefs.get("showSplash")).toBe(false)
+    expect(prefs.get("showHints")).toBe(false)
+  })
 })
 
 describe("Tool > detail mode", () => {

@@ -125,7 +125,8 @@ const AppInner = ({ launch: launch0 }: { launch: Launch }) => {
   // under the new HERMES_HOME instead of replaying the original argv.
   const launchRef = useRef<Launch>(launch0)
   const launch = launchRef.current
-  const [splash, setSplash] = useState(launch.splash !== false)
+  const show = preferences.usePref("showSplash") !== false
+  const [splash, setSplash] = useState(launch.splash !== false && show)
   const [switching, setSwitching] = useState(false)
   const summoned = useRef(false)
   const [composing, setComposing] = useState(false)
@@ -182,9 +183,10 @@ const AppInner = ({ launch: launch0 }: { launch: Launch }) => {
   // A pending inline prompt also suppresses the cloud — the overlay
   // would occlude the card the user needs to answer.
   const prompt = pendingPrompt(turn.messages)
-  const cloudAuto = turn.streaming && !turn.hasContent && !prompt
+  const cmode = preferences.usePref("cloudMode") ?? "auto"
+  const cloudAuto = cmode === "auto" && turn.streaming && !turn.hasContent && !prompt
   const [force, setForce] = useState<boolean | undefined>(undefined)
-  const cloud = !prompt && (force ?? cloudAuto)
+  const cloud = cmode !== "hidden" && !prompt && (force ?? cloudAuto)
   const prevStream = useRef(turn.streaming)
   useEffect(() => {
     if (!prevStream.current && turn.streaming) { setForce(undefined); setPick(undefined) }
@@ -202,10 +204,11 @@ const AppInner = ({ launch: launch0 }: { launch: Launch }) => {
   // Avatar click and cloud body click: toggle. Closing clears any pin so
   // next open shows live state.
   const onAvatar = useCallback(() => {
+    if (cmode === "hidden") return
     const next = !cloud
     if (!next) setPick(undefined)
     setForce(next)
-  }, [cloud])
+  }, [cloud, cmode])
   const closeCloud = useCallback(() => { setForce(false); setPick(undefined) }, [])
   const intr = useRef<() => void>(() => {})
   // Plain text submitted while streaming (Composer routes slash-shaped

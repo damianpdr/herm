@@ -21,6 +21,49 @@ describe("app", () => {
     t.destroy()
   })
 
+  test("compact tabbar uses short labels and hides navigation hint", async () => {
+    prefs.set("tabMode", "compact")
+    prefs.set("showHints", false)
+    const t = await mount()
+    await until(t, () => t.frame().includes("Ready"))
+
+    const f = t.frame()
+    expect(f).toMatch(/1 Chat.*2 Ctx.*3 Sess/)
+    expect(f).toContain("8 Tools")
+    expect(f).toContain("9 Cfg")
+    expect(f).toContain("0 Env")
+    expect(f).not.toContain("Context")
+    expect(f).not.toContain("Toolsets")
+    expect(f).not.toContain("or Ctrl+X N")
+    t.destroy()
+  })
+
+  test("showSplash=false suppresses launch splash even for splash-enabled launches", async () => {
+    prefs.set("showSplash", false)
+    const t = await mount({ launch: { mode: "new" } })
+    await until(t, () => t.frame().includes("Ready"))
+
+    expect(t.frame()).toContain("Message Hermes")
+    expect(t.frame()).not.toContain("Loading…")
+    expect(t.frame()).not.toContain("[enter] to send")
+    t.destroy()
+  })
+
+  test("cloudMode=manual prevents automatic thought cloud during tool-only streaming", async () => {
+    prefs.set("cloudMode", "manual")
+    const t = await mount()
+    await until(t, () => t.frame().includes("Ready"))
+
+    act(() => t.gw.push({ type: "message.start" }))
+    act(() => t.gw.push({ type: "tool.start", payload: { tool_id: "t1", name: "terminal", context: "echo hi" } }))
+    await t.settle()
+
+    expect(t.frame()).not.toContain("all 1")
+    expect(t.frame()).not.toContain("reasoning 0")
+    expect(t.frame()).not.toContain("tools 1")
+    t.destroy()
+  })
+
   test("alt+left/right switches tabs", async () => {
     const t = await mount()
     await until(t, () => t.frame().includes("Ready"))
